@@ -10,3 +10,5 @@ Basic academic version of Battleship game to build upon.
 - Nuno Neves — 122666
 - Gonçalo Rua — 122678
 - Beatriz Nunes — 122717
+
+github action funcional
