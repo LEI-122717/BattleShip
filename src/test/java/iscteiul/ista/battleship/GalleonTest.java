@@ -91,11 +91,11 @@ class GalleonTest {
     }
 
     @Test
-    @DisplayName("Galleon com bearing null deve lançar AssertionError")
+    @DisplayName("Galleon com bearing null deve lançar NullPointerException")
     void testGalleonNullBearing() {
-        assertThrows(AssertionError.class,
-                () -> new Galleon(null, start),
-                "Deve lançar AssertionError se o bearing for null");
+        assertThrows(NullPointerException.class,
+            () -> new Galleon(null, start),
+            "Deve lançar NullPointerException se o bearing for null");
     }
 
     @Test

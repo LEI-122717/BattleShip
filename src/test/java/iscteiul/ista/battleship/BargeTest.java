@@ -30,7 +30,7 @@ class BargeTest {
         Position anchor = new Position(4, 5);
         Barge barge = new Barge(Compass.EAST, anchor);
 
-        List<Position> cells = barge.getPositions();
+        List<IPosition> cells = barge.getPositions();
         assertEquals(1, cells.size(), "Barge must occupy exactly one cell");
         assertEquals(anchor, cells.get(0), "Single occupied cell must be the anchor");
     }
@@ -42,7 +42,7 @@ class BargeTest {
         Position anchor = new Position(0, 0);
         Barge barge = new Barge(bearing, anchor);
 
-        List<Position> cells = barge.getPositions();
+        List<IPosition> cells = barge.getPositions();
         assertAll(
                 () -> assertEquals(1, barge.getSize()),
                 () -> assertEquals(1, cells.size()),

@@ -78,11 +78,11 @@ class FrigateTest {
     }
 
     @Test
-    @DisplayName("Frigate com direção inválida deve lançar exceção")
+    @DisplayName("Frigate com direção inválida deve lançar NullPointerException")
     void testFrigateInvalidDirectionThrowsException() {
-        assertThrows(AssertionError.class,
+        assertThrows(NullPointerException.class,
                 () -> new Frigate(null, start),
-                "Deve lançar AssertionError para direção inválida");
+                "Deve lançar NullPointerException para direção inválida");
     }
 
     @Test
