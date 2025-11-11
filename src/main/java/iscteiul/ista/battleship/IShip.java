@@ -10,7 +10,7 @@ public interface IShip {
 
     Integer getSize();
 
-    List<IPosition> getPositions();
+    List<Position> getPositions();
 
     IPosition getPosition();
 
