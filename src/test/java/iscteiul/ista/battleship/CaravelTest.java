@@ -13,10 +13,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for Caravel (size = 2).
- * Notes:
- *  - Implementation builds two contiguous cells from the anchor depending on bearing:
- *      NORTH/SOUTH -> vertical (row, row+1)
- *      EAST/WEST   -> horizontal (col, col+1)
  */
 @DisplayName("Caravel (size 2)")
 class CaravelTest {
@@ -29,9 +25,10 @@ class CaravelTest {
     }
 
     @Test
-    @DisplayName("Null bearing throws NullPointerException")
-    void nullBearing_throwsNPE() {
-        assertThrows(NullPointerException.class,
+    @DisplayName("Null bearing throws AssertionError (lançado por Ship)")
+    void nullBearing_throwsAssertionError() {
+        // Ship.<init> valida bearing == null com assert, o que lança AssertionError
+        assertThrows(AssertionError.class,
                 () -> new Caravel(null, new Position(0, 0)));
     }
 
@@ -49,10 +46,10 @@ class CaravelTest {
         Set<IPosition> set = new HashSet<>(cells);  
         assertEquals(2, set.size(), "Occupied cells must be unique");
 
-        // expected contiguous cells according to current implementation
-        List<Position> expected = switch (bearing) {
+        // expected contiguous cells (apenas direções suportadas)
+        List<IPosition> expected = switch (bearing) {
             case NORTH, SOUTH -> List.of(
-                    new Position(anchor.getRow(), anchor.getColumn()),
+                    new Position(anchor.getRow(),     anchor.getColumn()),
                     new Position(anchor.getRow() + 1, anchor.getColumn())
             );
             case EAST, WEST -> List.of(
@@ -66,4 +63,23 @@ class CaravelTest {
                 "Cells must be contiguous from the anchor following bearing rules");
     }
 
+    @Test
+    @DisplayName("Extremos (top/bottom/left/right) condizem com as posições ocupadas")
+    void extremes_matchOccupiedCells() {
+        // Escolhemos SOUTH para gerar vertical (2 células)
+        Caravel c = new Caravel(Compass.SOUTH, new Position(2, 3));
+        List<IPosition> cells = c.getPositions();
+
+        int top = cells.stream().mapToInt(IPosition::getRow).min().orElseThrow();
+        int bottom = cells.stream().mapToInt(IPosition::getRow).max().orElseThrow();
+        int left = cells.stream().mapToInt(IPosition::getColumn).min().orElseThrow();
+        int right = cells.stream().mapToInt(IPosition::getColumn).max().orElseThrow();
+
+        assertAll(
+                () -> assertEquals(top,    c.getTopMostPos()),
+                () -> assertEquals(bottom, c.getBottomMostPos()),
+                () -> assertEquals(left,   c.getLeftMostPos()),
+                () -> assertEquals(right,  c.getRightMostPos())
+        );
+    }
 }
