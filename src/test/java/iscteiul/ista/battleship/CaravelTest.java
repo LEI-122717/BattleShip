@@ -33,10 +33,7 @@ class CaravelTest {
     }
 
     @ParameterizedTest(name = "bearing={0} -> positions are contiguous and size=2")
-    @EnumSource(
-            value = Compass.class,
-            names = { "NORTH", "SOUTH", "EAST", "WEST" } // apenas os suportados
-    )
+    @EnumSource(value = Compass.class, names = {"NORTH", "SOUTH", "EAST", "WEST"})
     @DisplayName("Occupied positions are contiguous and match bearing")
     void occupiedPositions_areContiguous(Compass bearing) {
         Position anchor = new Position(2, 3);
@@ -46,7 +43,7 @@ class CaravelTest {
         assertEquals(2, cells.size(), "Caravel must occupy exactly two cells");
 
         // unique cells
-        Set<IPosition> set = new HashSet<>(cells);
+        Set<IPosition> set = new HashSet<>(cells);  
         assertEquals(2, set.size(), "Occupied cells must be unique");
 
         // expected contiguous cells (apenas direções suportadas)
@@ -59,7 +56,7 @@ class CaravelTest {
                     new Position(anchor.getRow(), anchor.getColumn()),
                     new Position(anchor.getRow(), anchor.getColumn() + 1)
             );
-            default -> throw new IllegalArgumentException("Unsupported bearing: " + bearing);
+            default -> throw new IllegalArgumentException("Unexpected bearing value: " + bearing);
         };
 
         assertIterableEquals(expected, cells,
