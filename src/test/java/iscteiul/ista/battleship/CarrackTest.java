@@ -85,9 +85,9 @@ class CarrackTest {
     @DisplayName("Carrack com bearing null deve lançar NullPointerException (lançado pelo Ship)")
     void testCarrackInvalidBearing_null() {
         // O Ship.<init> lança NullPointerException quando bearing == null
-        assertThrows(NullPointerException.class,
+        assertThrows(AssertionError.class,
                 () -> new Carrack(null, start),
-                "Deve lançar NullPointerException quando o bearing é null (comportamento atual do Ship)");
+                "Deve lançar AssertionError para direção inválida");
     }
 
     @Test
