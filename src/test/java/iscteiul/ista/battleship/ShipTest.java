@@ -1,156 +1,222 @@
 package iscteiul.ista.battleship;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
-
 import static org.junit.jupiter.api.Assertions.*;
-import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+
+
+@DisplayName("Testes para a classe Ship")
 class ShipTest {
 
-    private Ship ship;
+    private Ship testShip;
+    private IPosition startPos;
+
+    // Dummy Ship subclass to test abstract Ship
+    static class TestShip extends Ship {
+        private int size;
+
+        public TestShip(String category, Compass bearing, IPosition pos, int size) {
+            super(category, bearing, pos);
+            this.size = size;
+            // Fill positions list for testing
+            for (int i = 0; i < size; i++) {
+                int row = pos.getRow();
+                int col = pos.getColumn();
+                if (bearing == Compass.NORTH ) {
+                    row -= i;
+                } else if (bearing == Compass.SOUTH) {
+                    row += i;
+                } else if (bearing == Compass.EAST) {
+                    col += i;
+                } else if (bearing == Compass.WEST) {
+                    col -= i;
+                }
+                getPositions().add(new Position(row, col));
+            }
+        }
+
+        @Override
+        public Integer getSize() {
+            return size;
+        }
+    }
 
     @BeforeEach
-    @DisplayName("Configuração Inicial dos Testes")
     void setUp() {
-        // Inicializando uma implementação de teste da classe abstrata Ship
-        ship = new Ship("fragata", Compass.NORTH, new Position(1, 1)) {
-            @Override
-            public Integer getSize() {
-                return 3; // Exemplo: navio de tamanho 3
+        startPos = new Position(2, 3);
+        testShip = new TestShip("caravela", Compass.EAST, startPos, 3);
+    }
+
+    // ---------------------- NESTED TEST CLASSES ----------------------
+
+    @Nested
+    @DisplayName("Construtor")
+    class ConstructorTests {
+
+        @Test
+        @DisplayName("Testar o construtor")
+        void testConstructor() {
+            assertThrows(AssertionError.class, () -> {
+                new TestShip("fragata", null, startPos, 3);
+            });
+            assertThrows(AssertionError.class, () -> {
+                new TestShip("fragata", Compass.EAST, null, 3);
+            });
+        }
+    }
+
+    @Nested
+    @DisplayName("Getters")
+    class GetterTests {
+
+        @Test
+        @DisplayName("Testar os getters")
+        void testGetters() {
+            assertEquals("caravela", testShip.getCategory());
+            assertEquals(Compass.EAST, testShip.getBearing());
+            assertEquals(startPos, testShip.getPosition());
+            assertEquals(3, testShip.getSize());
+        }
+    }
+
+    @Nested
+    @DisplayName("Ocupação e tiros")
+    class OccupiesAndShootTests {
+
+        @Test
+        @DisplayName("Testar o método occupies")
+        void testOccupies() {
+            assertThrows(AssertionError.class, () -> {
+                testShip.occupies(null);
+            });
+            IPosition occupied = new Position(2, 4);
+            assertTrue(testShip.occupies(occupied));
+            IPosition notOccupied = new Position(5, 5);
+            assertFalse(testShip.occupies(notOccupied));
+        }
+
+        @Test
+        @DisplayName("Testar se ainda flutua")
+        void testStillFloating() {
+            assertTrue(testShip.stillFloating());
+            for (IPosition pos : testShip.getPositions()) {
+                pos.shoot();
             }
-        };
+            assertFalse(testShip.stillFloating());
+        }
 
-        // Adicionando posições de exemplo para a simulação do navio
-        ship.getPositions().add(new Position(1, 1));
-        ship.getPositions().add(new Position(1, 2));
-        ship.getPositions().add(new Position(1, 3));
+        @Test
+        @DisplayName("Testar o shoot")
+        void testShoot() {
+            assertThrows(AssertionError.class, () -> {
+                testShip.shoot(null);
+            });
+            IPosition target = new Position(2, 3);
+            testShip.shoot(target);
+            assertTrue(testShip.getPositions().get(0).isHit());
+        }
     }
 
-    @Test
-    @DisplayName("Teste buildShip - Instanciar diferentes tipos de embarcações")
-    void buildShip() {
-        Ship barge = Ship.buildShip("barca", Compass.NORTH, new Position(1, 1));
-        assertNotNull(barge);
-        assertEquals("Barca", barge.getCategory());
+    @Nested
+    @DisplayName("Proximidade (tooCloseTo)")
+    class ProximityTests {
 
-        Ship invalidShip = Ship.buildShip("invalid", Compass.EAST, new Position(2, 2));
-        assertNull(invalidShip, "Tipos de navios inválidos devem retornar null");
+        @Test
+        @DisplayName("Testar o método que verifica se as posições são demasiado próximas ou não")
+        void testTooCloseToPosition() {
+            IPosition adjacent = new Position(3, 3);
+            assertTrue(testShip.tooCloseTo(adjacent));
+            IPosition far = new Position(10, 10);
+            assertFalse(testShip.tooCloseTo(far));
+        }
+
+        @Test
+        @DisplayName("Testar o método que verifica se os navios estão demasiado próximos ou não")
+        void testTooCloseToOtherShip() {
+            assertThrows(AssertionError.class, () -> {
+                testShip.tooCloseTo((IShip) null);
+            });
+            IShip other = new TestShip("barca", Compass.SOUTH, new Position(1, 3), 2);
+            assertTrue(testShip.tooCloseTo(other));
+
+            IShip farShip = new TestShip("barca", Compass.SOUTH, new Position(10, 10), 2);
+            assertFalse(testShip.tooCloseTo(farShip));
+        }
     }
 
-    @Test
-    @DisplayName("Teste getCategory - Retorna a categoria do navio")
-    void getCategory() {
-        assertEquals("fragata", ship.getCategory());
+    @Nested
+    @DisplayName("Top/Bottom/Left/Right para cada orientação")
+    class BoundsByBearingTests {
+
+        @Test
+        @DisplayName("Testar as posições quando o navio está orientado a East")
+        void testTopBottomLeftRightPositions_East() {
+            assertEquals(2, testShip.getTopMostPos());
+            assertEquals(2, testShip.getBottomMostPos());
+            assertEquals(3, testShip.getLeftMostPos());
+            assertEquals(5, testShip.getRightMostPos());
+        }
+
+        @Test
+        @DisplayName("Testar as posições quando o navio está orientado a South")
+        void testTopBottomLeftRightPositions_South() {
+            Ship southShip = new TestShip("fragata", Compass.SOUTH, new Position(5, 5), 3);
+            // Positions: (5,5), (6,5), (7,5)
+            assertEquals(5, southShip.getTopMostPos());
+            assertEquals(7, southShip.getBottomMostPos());
+            assertEquals(5, southShip.getLeftMostPos());
+            assertEquals(5, southShip.getRightMostPos());
+        }
+
+        @Test
+        @DisplayName("Testar as posições quando o navio está orientado a North")
+        void testTopBottomLeftRightPositions_North() {
+            Ship northShip = new TestShip("fragata", Compass.NORTH, new Position(5, 5), 3);
+            // Positions: (5,5), (4,5), (3,5)
+            assertEquals(3, northShip.getTopMostPos());
+            assertEquals(5, northShip.getBottomMostPos());
+            assertEquals(5, northShip.getLeftMostPos());
+            assertEquals(5, northShip.getRightMostPos());
+        }
+
+        @Test
+        @DisplayName("Testar as posições quando o navio está orientado a West")
+        void testTopBottomLeftRightPositions_West() {
+            Ship westShip = new TestShip("fragata", Compass.WEST, new Position(5, 5), 3);
+            // Positions: (5,5), (5,4), (5,3)
+            assertEquals(5, westShip.getTopMostPos());
+            assertEquals(5, westShip.getBottomMostPos());
+            assertEquals(3, westShip.getLeftMostPos());
+            assertEquals(5, westShip.getRightMostPos());
+        }
     }
 
-    @Test
-    @DisplayName("Teste getPositions - Retorna todas as posições do navio")
-    void getPositions() {
-        List<IPosition> positions = ship.getPositions();
-        assertEquals(3, positions.size()); // Deve haver 3 posições
+    @Nested
+    @DisplayName("BuildShip e toString")
+    class FactoryAndToStringTests {
 
-        // Verifique todas as linhas e colunas para garantir consistência
-        assertAll(
-                () -> assertEquals(1, positions.get(0).getRow()),  // Primeira posição, linha 1
-                () -> assertEquals(1, positions.get(0).getColumn()), // Primeira posição, coluna 1
+        @Test
+        @DisplayName("Testar os construtores de vários tipos")
+        void testBuildShipAllKinds() {
+            assertTrue(Ship.buildShip("barca", Compass.NORTH, new Position(1, 1)) instanceof Barge);
+            assertTrue(Ship.buildShip("caravela", Compass.EAST, new Position(1, 1)) instanceof Caravel);
+            assertTrue(Ship.buildShip("nau", Compass.SOUTH, new Position(1, 1)) instanceof Carrack);
+            assertTrue(Ship.buildShip("fragata", Compass.WEST, new Position(1, 1)) instanceof Frigate);
+            assertTrue(Ship.buildShip("galeao", Compass.NORTH, new Position(1, 1)) instanceof Galleon);
+            assertNull(Ship.buildShip("inexistente", Compass.SOUTH, new Position(1, 1)));
+        }
 
-                () -> assertEquals(1, positions.get(1).getRow()),  // Segunda posição, linha 1
-                () -> assertEquals(2, positions.get(1).getColumn()), // Segunda posição, coluna 2
-
-                () -> assertEquals(1, positions.get(2).getRow()),  // Terceira posição, linha 1
-                () -> assertEquals(3, positions.get(2).getColumn()) // Terceira posição, coluna 3
-        );
-    }
-
-    @Test
-    @DisplayName("Teste getPosition - Retorna posição inicial")
-    void getPosition() {
-        IPosition posInicial = ship.getPosition();
-        assertEquals(1, posInicial.getRow());
-        assertEquals(1, posInicial.getColumn());
-    }
-
-    @Test
-    @DisplayName("Teste getBearing - Retorna a direção atual do navio")
-    void getBearing() {
-        assertEquals(Compass.NORTH, ship.getBearing());
-    }
-
-    @Test
-    @DisplayName("Teste stillFloating - Verifica se o navio ainda está flutuando")
-    void stillFloating() {
-        ship.getPositions().get(0).shoot(); // Atinge uma posição
-        assertTrue(ship.stillFloating());
-
-        // Atinge todas as posições
-        ship.getPositions().forEach(IPosition::shoot);
-        assertFalse(ship.stillFloating());
-    }
-
-    @Test
-    @DisplayName("Teste getTopMostPos - Retorna a linha mais alta")
-    void getTopMostPos() {
-        assertEquals(1, ship.getTopMostPos());
-    }
-
-    @Test
-    @DisplayName("Teste getBottomMostPos - Retorna a linha mais baixa")
-    void getBottomMostPos() {
-        assertEquals(1, ship.getBottomMostPos());
-    }
-
-    @Test
-    @DisplayName("Teste getLeftMostPos - Retorna a coluna mais à esquerda")
-    void getLeftMostPos() {
-        assertEquals(1, ship.getLeftMostPos());
-    }
-
-    @Test
-    @DisplayName("Teste getRightMostPos - Retorna a coluna mais à direita")
-    void getRightMostPos() {
-        assertEquals(3, ship.getRightMostPos());
-    }
-
-    @Test
-    @DisplayName("Teste occupies - Verifica se ocupa uma posição")
-    void occupies() {
-        IPosition position = new Position(1, 2);
-        assertTrue(ship.occupies(position));
-
-        IPosition outsidePosition = new Position(2, 2);
-        assertFalse(ship.occupies(outsidePosition));
-    }
-
-    @Test
-    @DisplayName("Teste tooCloseTo - Verifica se está muito próximo de outro navio")
-    void tooCloseTo() {
-        // Um exemplo com um "navio fictício"
-        Ship anotherShip = new Ship("nau", Compass.EAST, new Position(5, 5)) {
-            @Override
-            public Integer getSize() {
-                return 1; // Exemplo de tamanho do outro navio
-            }
-        };
-
-        anotherShip.getPositions().add(new Position(5, 5));
-        assertFalse(ship.tooCloseTo(anotherShip));
-
-        anotherShip.getPositions().add(new Position(1, 4)); // Adiciona posição perto
-        assertTrue(ship.tooCloseTo(anotherShip));
-    }
-
-    @Test
-    @DisplayName("Teste shoot - Marca uma posição como atingida")
-    void shoot() {
-        ship.shoot(new Position(1, 2));
-        assertTrue(ship.getPositions().get(1).isHit());
-    }
-
-    @Test
-    @DisplayName("Teste toString - Retorna representação como texto")
-    void testToString() {
-        assertEquals("[fragata n Linha = 1 Coluna = 1]", ship.toString());
+        @Test
+        @DisplayName("Testar os prints")
+        void testToStringContainsInfo() {
+            String str = testShip.toString();
+            assertTrue(str.contains(testShip.getCategory()));
+            assertTrue(str.contains(Compass.EAST.toString()));
+            assertTrue(str.contains(startPos.toString()));
+        }
     }
 }
