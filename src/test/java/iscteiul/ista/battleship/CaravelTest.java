@@ -25,15 +25,18 @@ class CaravelTest {
     }
 
     @Test
-    @DisplayName("Null bearing throws AssertionError (lançado por Ship)")
-    void nullBearing_throwsAssertionError() {
-        // Ship.<init> valida bearing == null com assert, o que lança AssertionError
-        assertThrows(AssertionError.class,
+    @DisplayName("Null bearing throws NullPointerException (lançado por Ship)")
+    void nullBearing_throwsNullPointerException() {
+        // Ship.<init> lança NullPointerException quando bearing == null
+        assertThrows(NullPointerException.class,
                 () -> new Caravel(null, new Position(0, 0)));
     }
 
     @ParameterizedTest(name = "bearing={0} -> positions are contiguous and size=2")
-    @EnumSource(value = Compass.class, names = {"NORTH", "SOUTH", "EAST", "WEST"})
+    @EnumSource(
+            value = Compass.class,
+            names = { "NORTH", "SOUTH", "EAST", "WEST" } // apenas os suportados
+    )
     @DisplayName("Occupied positions are contiguous and match bearing")
     void occupiedPositions_areContiguous(Compass bearing) {
         Position anchor = new Position(2, 3);
@@ -43,7 +46,7 @@ class CaravelTest {
         assertEquals(2, cells.size(), "Caravel must occupy exactly two cells");
 
         // unique cells
-        Set<IPosition> set = new HashSet<>(cells);  
+        Set<IPosition> set = new HashSet<>(cells);
         assertEquals(2, set.size(), "Occupied cells must be unique");
 
         // expected contiguous cells (apenas direções suportadas)
@@ -56,7 +59,7 @@ class CaravelTest {
                     new Position(anchor.getRow(), anchor.getColumn()),
                     new Position(anchor.getRow(), anchor.getColumn() + 1)
             );
-            default -> throw new IllegalArgumentException("Unexpected bearing value: " + bearing);
+            default -> throw new IllegalArgumentException("Unsupported bearing: " + bearing);
         };
 
         assertIterableEquals(expected, cells,
