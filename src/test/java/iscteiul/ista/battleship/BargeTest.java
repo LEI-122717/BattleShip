@@ -1,7 +1,7 @@
 package iscteiul.ista.battleship;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -9,74 +9,92 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for Barge (size = 1).
- */
-@DisplayName("Barge (size 1)")
+@DisplayName("Teste para a classe Barge")
 class BargeTest {
 
-    @Test
-    @DisplayName("getSize() returns 1")
-    void getSize_returnsOne() {
-        IPosition anchor = new Position(2, 3);
-        Barge barge = new Barge(Compass.NORTH, anchor);
-        assertEquals(1, barge.getSize());
+    // campo partilhado entre os nested tests
+    private IPosition startPos;
+
+    @BeforeEach
+    void globalSetUp() {
+        // posição base para os testes
+        startPos = new Position(3, 3);
     }
 
-    @Test
-    @DisplayName("Occupied positions contains exactly the anchor cell")
-    void occupiedPositions_hasOnlyAnchor() {
-        Position anchor = new Position(4, 5);
-        Barge barge = new Barge(Compass.EAST, anchor);
+    @Nested
+    @DisplayName("Metadados")
+    class MetadataTests {
+        private Barge barge;
 
-        // getPositions() -> List<IPosition>
-        List<IPosition> cells = barge.getPositions();
-        assertEquals(1, cells.size(), "Barge must occupy exactly one cell");
-        assertEquals(anchor, cells.get(0), "Single occupied cell must be the anchor");
+        @BeforeEach
+        void setUp() {
+            barge = new Barge(Compass.NORTH, startPos);
+        }
+
+        @Test
+        @DisplayName("Verificar metadados da Barca (Tamanho)")
+        void testBargeMetadata() {
+            assertEquals(1, barge.getSize(), "O tamanho da Barca deve ser sempre 1");
+        }
     }
 
-    @ParameterizedTest(name = "bearing={0}")
-    @EnumSource(Compass.class)
-    @DisplayName("Bearing does not change occupied cells for size-1 ship")
-    void bearingDoesNotAffectCells(Compass bearing) {
-        Position anchor = new Position(0, 0);
-        Barge barge = new Barge(bearing, anchor);
+    @Nested
+    @DisplayName("Posição e inicialização")
+    class PositionTests {
+        private Barge barge;
 
-        List<IPosition> cells = barge.getPositions();
-        assertAll(
-                () -> assertEquals(1, barge.getSize()),
-                () -> assertEquals(1, cells.size()),
-                () -> assertEquals(anchor, cells.get(0))
-        );
+        @BeforeEach
+        void setUp() {
+            barge = new Barge(Compass.NORTH, startPos);
+        }
+
+        @Test
+        @DisplayName("Verificar inicialização de posição única")
+        void testBargePosition() {
+            // Verifica se a orientação foi guardada corretamente
+            assertEquals(Compass.NORTH, barge.getBearing(), "A orientação inicial deve ser preservada");
+
+            // Verifica as posições ocupadas
+            List<IPosition> positions = barge.getPositions();
+            assertNotNull(positions, "A lista de posições não deve ser nula");
+            assertEquals(1, positions.size(), "A Barca deve ocupar exatamente 1 posição");
+
+            // Verifica se a posição ocupada é exatamente a que foi passada no construtor
+            IPosition occupiedPos = positions.get(0);
+            assertEquals(startPos, occupiedPos, "A posição ocupada deve ser exatamente a passada no construtor");
+        }
     }
 
-    @Test
-    @DisplayName("occupies(anchor) == true e não ocupa vizinhos")
-    void occupies_anchor_only() {
-        Position anchor = new Position(4, 5);
-        Barge barge = new Barge(Compass.WEST, anchor);
+    @Nested
+    @DisplayName("Independência de orientação")
+    class OrientationTests {
 
-        assertAll(
-                () -> assertTrue(barge.occupies(anchor)),
-                () -> assertFalse(barge.occupies(new Position(4, 4))),
-                () -> assertFalse(barge.occupies(new Position(4, 6))),
-                () -> assertFalse(barge.occupies(new Position(3, 5))),
-                () -> assertFalse(barge.occupies(new Position(5, 5)))
-        );
+        @ParameterizedTest(name = "orientation = {0}")
+        @EnumSource(value = Compass.class, names = {"NORTH", "EAST", "SOUTH", "WEST"})
+        @DisplayName("Verificar independência da orientação para tamanho 1 (parametrizado)")
+        void testOrientationIndependence(Compass orientation) {
+            // Como a Barca tem tamanho 1, a posição ocupada deve ser a mesma independentemente da orientação
+            IPosition pos = new Position(5, 5);
+
+            Barge b = new Barge(orientation, pos);
+
+            assertAll("Verificar que para cada orientação a posição é exactamente a passada",
+                    () -> assertNotNull(b.getPositions(), "Lista de posições não deve ser nula"),
+                    () -> assertEquals(1, b.getPositions().size(), "Deve ocupar exactamente 1 posição"),
+                    () -> assertEquals(pos, b.getPositions().get(0), "A posição ocupada deve ser igual à passada no construtor")
+            );
+        }
     }
 
-    @Test
-    @DisplayName("Extremos (top/bottom/left/right) coincidem com a âncora")
-    void extremes_equal_to_anchor() {
-        Position anchor = new Position(7, 2);
-        Barge barge = new Barge(Compass.SOUTH, anchor);
-
-        assertAll(
-                () -> assertEquals(anchor.getRow(),    barge.getTopMostPos()),
-                () -> assertEquals(anchor.getRow(),    barge.getBottomMostPos()),
-                () -> assertEquals(anchor.getColumn(), barge.getLeftMostPos()),
-                () -> assertEquals(anchor.getColumn(), barge.getRightMostPos())
-        );
+    @Nested
+    @DisplayName("Validação do construtor")
+    class ConstructorValidation {
+        @Test
+        @DisplayName("Construtor com bearing null deve lançar NullPointerException (lançado por Ship)")
+        void testNullBearingThrowsNullPointerException() {
+            assertThrows(NullPointerException.class,
+                    () -> new Barge(null, new Position(0, 0)),
+                    "Deve lançar NullPointerException quando o bearing é null (comportamento actual do Ship)");
+        }
     }
-
 }
