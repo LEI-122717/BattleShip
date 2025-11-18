@@ -58,8 +58,8 @@ public abstract class Ship implements IShip {
      * @param pos
      */
     public Ship(String category, Compass bearing, IPosition pos) {
-        assert bearing != null;
-        assert pos != null;
+        assert bearing != null : "Bearing must not be null";
+        assert pos != null : "Position must not be null";
 
         this.category = category;
         this.bearing = bearing;
