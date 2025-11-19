@@ -1,60 +1,55 @@
-# test
+# Test
 
 ## Testing Checklists
 
 ### S1 Release checklist
-* [unknown] C1 Reports
-    * Gerar relatórios desempenho
-    * Validar integridade dados
-    * Confirmar diretoria correta
-
+* [x] C1 Reports
+    - Gerar relatórios desempenho -> passed @LEI-122663
+    - Validar integridade dados -> passed @LEI-122663
+    - Confirmar diretoria correta -> passed @LEI-122663
 
 ### S2 Automated tests checklist
-* [unknown] C2 Unit Tests
-    * Executar testes unitários
-    * Verificar anotações Allure
-    * Validar fluxos principais
-
+* [x] C2 Unit Tests
+    - Executar testes unitários -> passed @LEI-122663
+    - Verificar anotações Allure -> passed @LEI-122663
+    - Validar fluxos principais -> passed @LEI-122663
 
 ## Unit tests
 
 ### S3 Ship test cases
-* [unknown] C3 BargeTest
-    tags: unit-tests, test-cases
-    * Criar objeto Barge
-    * Validar capacidade carga
-    * Testar limite excedido
+* [x] C3 BargeTest
+  tags: unit-tests, test-cases
+    - Criar objeto Barge -> passed @LEI-122663
+    - Validar capacidade carga -> passed @LEI-122663
+    - Testar limite excedido -> passed @LEI-122663
 
-* [unknown] C4 CaravelTest
-    tags: unit-tests, test-cases
-    * Instanciar Caravel
-    * Simular navegação adversa
-    * Calcular velocidade correta
+* [x] C4 CaravelTest
+  tags: unit-tests, test-cases
+    - Instanciar Caravel -> passed @LEI-122663
+    - Simular navegação adversa -> passed @LEI-122663
+    - Calcular velocidade correta -> passed @LEI-122663
 
-* [unknown] C5 CarrackTest
-    tags: unit-tests, test-cases
-    * Criar Carrack decks
-    * Verificar número decks
-    * Validar remoção inválida
+* [x] C5 CarrackTest
+  tags: unit-tests, test-cases
+    - Criar Carrack decks -> passed @LEI-122663
+    - Verificar número decks -> passed @LEI-122663
+    - Validar remoção inválida -> passed @LEI-122663
 
-* [unknown] C6 FrigateTest
-    tags: unit-tests, test-cases
-    * Criar Frigate armada
-    * Testar disparo canhões
-    * Confirmar estado combate
+* [x] C6 FrigateTest
+  tags: unit-tests, test-cases
+    - Criar Frigate armada -> passed @LEI-122663
+    - Testar disparo canhões -> passed @LEI-122663
+    - Confirmar estado combate -> passed @LEI-122663
 
-* [unknown] C7 GalleonTest
-    tags: unit-tests, test-cases
-    * Inicializar Galleon
-    * Atribuir tripulação
-    * Calcular alcance vento
-
+* [x] C7 GalleonTest
+  tags: unit-tests, test-cases
+    - Inicializar Galleon -> passed @LEI-122663
+    - Atribuir tripulação -> passed @LEI-122663
+    - Calcular alcance vento -> passed @LEI-122663
 
 ### S4 Task test case
-* [unknown] C8 TaskTest
-    tags: unit-tests, test-cases
-    * Criar nova tarefa
-    * Marcar como concluída
-    * Validar dependências
-
-
+* [x] C8 TaskTest
+  tags: unit-tests, test-cases
+    - Criar nova tarefa -> passed @LEI-122663
+    - Marcar como concluída -> passed @LEI-122663
+    - Validar dependências -> passed @LEI-122663
