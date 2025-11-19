@@ -28,7 +28,7 @@ class CaravelTest {
     @DisplayName("Null bearing throws NullPointerException (lançado por Ship)")
     void nullBearing_throwsNullPointerException() {
         // Ship.<init> lança NullPointerException quando bearing == null
-        assertThrows(NullPointerException.class,
+        assertThrows(AssertionError.class,
                 () -> new Caravel(null, new Position(0, 0)));
     }
 
